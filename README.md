@@ -17,9 +17,9 @@ A python file that was provided by UDACITY for testing purposes.
 A sql file to create the inital database for the testing routines.
 
 ###What do you need?
-[Install Postgres](postgresguide.com/utilities/psql.html)
+[Install Postgres](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
 
-[Install Python](www.python.org/downloads)
+[Install Python](https://www.python.org/downloads/)
 
 If you are using Linux or MacOS, you should already have Python installed.  However, I used Python 3.5 so if you have a different verision, it is possible to see some errors.
 
