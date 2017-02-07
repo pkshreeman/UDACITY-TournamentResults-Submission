@@ -1,22 +1,22 @@
--- Table definitions for the tournament project.
---
--- Put your SQL 'create table' statements in this file; also 'create view'
--- statements if you choose to use it.
---
 --The housecleaning is necessary to ensure that we start with clean database
-drop view  if exists standings;
-drop table if exists players;
-
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+\c tournament;
+--Creating table for registered players
 create table players (
                       id        serial primary key,
-                      name      text,
-                      wins      real default 0,
-                      matches   real default 0);
-
--- I created int columns for wins and matches, but it wouldn't pass the test
--- because int trigged the len() errors so I bypassed that by defining columns
---as real, instead of int.
-
+                      name      text);
+--Creating table for tracking who is winners and losers, unfortunately...
+create table match (
+                    match_id   serial primary key,
+                    winner     int references players(id),
+                    loser      int references players(id)
+                  );
 create view standings as
-  select id, name, wins from players
-  order by wins desc;
+--http://stackoverflow.com/questions/29936536/how-to-count-two-separate-columns-in-the-same-table-and-sum-them-into-a-new-colu
+                  SELECT    id, name,
+                            COUNT(CASE id WHEN winner THEN 1 ELSE NULL END) AS wins,
+                            COUNT(match_id) AS matches
+                  FROM      players
+                  LEFT JOIN match ON id IN (winner, loser)
+                  GROUP BY  id, name;

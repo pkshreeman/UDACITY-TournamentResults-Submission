@@ -17,7 +17,7 @@ def deleteMatches():
     """Remove all the match records from the database."""
     db = connect()
     c = db.cursor()
-    query = "update players set matches = 0, wins = 0"
+    query = "TRUNCATE match"
     c.execute(query)
     db.commit()
     db.close()
@@ -27,7 +27,7 @@ def deletePlayers():
     """Remove all the player records from the database."""
     db = connect()
     c = db.cursor()
-    query = "delete from players"
+    query = "TRUNCATE players CASCADE"
     c.execute(query)
     db.commit()
     db.close()
@@ -81,7 +81,7 @@ def playerStandings():
     """
     db = connect()
     c = db.cursor()
-    query = "select * from players"
+    query = "select * from standings"
     c.execute(query)
     data = c.fetchall()
     db.close()
@@ -97,7 +97,7 @@ def reportMatch(winner, loser):
     """
     db = connect()
     c = db.cursor()
-    query = "update players set wins = wins + 1, matches = matches + 1 where id = (%s); update players set matches = matches + 1 where id = (%s) " # noqa
+    query = "insert into match (winner, loser) values (%s,%s)"
     c.execute(query, (winner, loser,))
     db.commit()
     db.close
@@ -120,10 +120,14 @@ def swissPairings():
     """
     db = connect()
     c = db.cursor()
-    query = "with seq as (select u.name, u.id, row_number() over() as seq from standings u ) select a.id, a.name, b.id, b.name from seq a join seq b on a.seq % 2 = 1 and b.seq = a.seq+1;" # noqa
+    query = "with cte as(select *, ceiling(1.0 * row_number() over(order by wins) / 2) as rn from standings) select c1.Id, c1.Name, c2.Id, c2.name from cte c1 join cte c2 on c1.rn = c2.rn and c1.Id > c2.Id;" # noqa
+
     """
     This method was provided by this stackoverflow solution
+    This was solution to earlier attempt:
     http://stackoverflow.com/questions/30546045/psql-get-a-pair-from-single-table
+    This second attempt is based on:
+    --http://stackoverflow.com/questions/34648921/pair-up-rows-in-sql
     """
     c.execute(query)
     data = c.fetchall()
